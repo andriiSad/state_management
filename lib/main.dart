@@ -64,11 +64,15 @@ class BreadCrumbProvider extends ChangeNotifier {
   }
 }
 
+typedef OnTapBreadCrumb = void Function(BreadCrumb);
+
 class BreadCrumbsWidget extends StatelessWidget {
   final UnmodifiableListView<BreadCrumb> breadCrumbs;
+  final OnTapBreadCrumb onTap;
   const BreadCrumbsWidget({
     super.key,
     required this.breadCrumbs,
+    required this.onTap,
   });
 
   @override
@@ -76,10 +80,15 @@ class BreadCrumbsWidget extends StatelessWidget {
     return Wrap(
       children: breadCrumbs.map(
         (breadCrumb) {
-          return Text(
-            breadCrumb.title,
-            style: TextStyle(
-              color: breadCrumb.isActive ? Colors.blue : Colors.black,
+          return GestureDetector(
+            onTap: () {
+              onTap(breadCrumb);
+            },
+            child: Text(
+              breadCrumb.title,
+              style: TextStyle(
+                color: breadCrumb.isActive ? Colors.blue : Colors.black,
+              ),
             ),
           );
         },
@@ -104,6 +113,19 @@ class HomePage extends StatelessWidget {
               builder: (context, value, child) {
                 return BreadCrumbsWidget(
                   breadCrumbs: value.items,
+                  onTap: (breadCrumb) {
+                    if (breadCrumb.isActive) {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => Scaffold(
+                          appBar: AppBar(
+                            title: Text(
+                              breadCrumb.name,
+                            ),
+                          ),
+                        ),
+                      ));
+                    }
+                  },
                 );
               },
             ),
@@ -178,7 +200,6 @@ class _NewBreadCrumbWidgetState extends State<NewBreadCrumbWidget> {
                       ),
                     );
               }
-
               Navigator.of(context).pop();
             },
             child: const Text(
