@@ -16,7 +16,7 @@ void main() {
         home: const HomePage(),
         debugShowCheckedModeBanner: false,
         routes: {
-          '/new': (context) => const Material(),
+          '/new': (context) => const NewBreadCrumbWidget(),
         },
       ),
     ),
@@ -93,30 +93,96 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<BreadCrumbProvider>(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Home Page'),
       ),
+      body: Center(
+        child: Column(
+          children: [
+            Consumer<BreadCrumbProvider>(
+              builder: (context, value, child) {
+                return BreadCrumbsWidget(
+                  breadCrumbs: value.items,
+                );
+              },
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pushNamed('/new');
+              },
+              child: const Text(
+                'Add new bread crumb',
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                context.read<BreadCrumbProvider>().reset();
+              },
+              child: const Text(
+                'Reset',
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class NewBreadCrumbWidget extends StatefulWidget {
+  const NewBreadCrumbWidget({super.key});
+
+  @override
+  State<NewBreadCrumbWidget> createState() => _NewBreadCrumbWidgetState();
+}
+
+class _NewBreadCrumbWidgetState extends State<NewBreadCrumbWidget> {
+  late final TextEditingController _controller;
+  @override
+  void initState() {
+    _controller = TextEditingController();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Add new Bread Crumb',
+        ),
+      ),
       body: Column(
         children: [
-          BreadCrumbsWidget(
-            breadCrumbs: (provider.items),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pushNamed('/new');
-            },
-            child: const Text(
-              'Add new bread crumb',
+          TextField(
+            controller: _controller,
+            decoration: const InputDecoration(
+              hintText: 'Add new bread crumb here...',
             ),
           ),
           TextButton(
             onPressed: () {
-              context.read<BreadCrumbProvider>().reset();
+              final text = _controller.text;
+              if (text.isNotEmpty) {
+                context.read<BreadCrumbProvider>().add(
+                      BreadCrumb(
+                        isActive: false,
+                        name: text,
+                      ),
+                    );
+              }
+
+              Navigator.of(context).pop();
             },
             child: const Text(
-              'Reset',
+              'Add',
             ),
           ),
         ],
